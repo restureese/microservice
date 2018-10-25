@@ -1,16 +1,16 @@
 """empty message
 
-Revision ID: caaefc07a27a
+Revision ID: c53831cb489f
 Revises: 
-Create Date: 2018-10-14 11:50:44.222225
+Create Date: 2018-10-24 21:29:13.377684
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'caaefc07a27a'
+revision = 'c53831cb489f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,45 +33,10 @@ def upgrade():
     sa.Column('Gelar', sa.String(length=16), nullable=False),
     sa.PrimaryKeyConstraint('idAsesor')
     )
-    op.create_table('Pekerjaan',
-    sa.Column('idPekerjaan', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('NamaPerusahaan', sa.String(length=128), nullable=False),
-    sa.Column('Jabatan', sa.String(length=128), nullable=True),
-    sa.Column('Alamat', sa.String(length=255), nullable=True),
-    sa.Column('KodePos', sa.String(length=8), nullable=True),
-    sa.Column('NoTelepon', sa.String(length=13), nullable=True),
-    sa.Column('NoFax', sa.String(length=32), nullable=True),
-    sa.Column('Email', sa.String(length=64), nullable=True),
-    sa.PrimaryKeyConstraint('idPekerjaan')
-    )
-    op.create_table('UjiKompetensi',
-    sa.Column('KodeUnit', sa.String(length=128), nullable=False),
-    sa.Column('JudulUnit', sa.String(length=128), nullable=False),
-    sa.PrimaryKeyConstraint('KodeUnit')
-    )
-    op.create_table('ElemenKompetensi',
-    sa.Column('idElemen', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('Nama', sa.String(length=128), nullable=False),
-    sa.Column('ujikompetensi', sa.String(length=128), nullable=True),
-    sa.ForeignKeyConstraint(['ujikompetensi'], ['UjiKompetensi.KodeUnit'], ),
-    sa.PrimaryKeyConstraint('idElemen')
-    )
-    op.create_table('Jurusan',
-    sa.Column('idJurusan', sa.Integer(), nullable=False),
+    op.create_table('Skema',
+    sa.Column('idSkema', sa.Integer(), nullable=False),
     sa.Column('Nama', sa.String(length=64), nullable=False),
-    sa.Column('kompetensi', sa.String(length=128), nullable=True),
-    sa.ForeignKeyConstraint(['kompetensi'], ['UjiKompetensi.KodeUnit'], ),
-    sa.PrimaryKeyConstraint('idJurusan')
-    )
-    op.create_table('Ujian',
-    sa.Column('idUjian', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('waktu', sa.DateTime(), nullable=False),
-    sa.Column('tempat', sa.String(length=32), nullable=True),
-    sa.Column('ruang', sa.String(length=32), nullable=True),
-    sa.Column('status', sa.String(length=15), nullable=True),
-    sa.Column('asesor', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['asesor'], ['Asesor.idAsesor'], ),
-    sa.PrimaryKeyConstraint('idUjian')
+    sa.PrimaryKeyConstraint('idSkema')
     )
     op.create_table('Asesi',
     sa.Column('idAsesi', sa.Integer(), autoincrement=True, nullable=False),
@@ -86,13 +51,51 @@ def upgrade():
     sa.Column('NoHPKantor', sa.String(length=13), nullable=True),
     sa.Column('Email', sa.String(length=64), nullable=True),
     sa.Column('PendidikanTerakhir', sa.String(length=128), nullable=True),
-    sa.Column('StatusKompeten', sa.Boolean(), nullable=True),
     sa.Column('StatusBekerja', sa.Boolean(), nullable=True),
-    sa.Column('idPekerjaan', sa.Integer(), nullable=True),
-    sa.Column('jurusan', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['idPekerjaan'], ['Pekerjaan.idPekerjaan'], ),
-    sa.ForeignKeyConstraint(['jurusan'], ['Jurusan.idJurusan'], ),
+    sa.Column('NamaPerusahaan', sa.String(length=128), nullable=False),
+    sa.Column('Jabatan', sa.String(length=128), nullable=True),
+    sa.Column('AlamatPerusahaan', sa.String(length=255), nullable=True),
+    sa.Column('KodePosPerusahaan', sa.String(length=8), nullable=True),
+    sa.Column('NoTeleponPerusahaan', sa.String(length=13), nullable=True),
+    sa.Column('NoFaxPerusahaan', sa.String(length=32), nullable=True),
+    sa.Column('EmailPerusahaan', sa.String(length=64), nullable=True),
+    sa.Column('Skema', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['Skema'], ['Skema.idSkema'], ),
     sa.PrimaryKeyConstraint('idAsesi')
+    )
+    op.create_table('UjiKompetensi',
+    sa.Column('kodeUnit', sa.String(length=128), nullable=False),
+    sa.Column('judulUnit', sa.String(length=128), nullable=False),
+    sa.Column('Skema', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['Skema'], ['Skema.idSkema'], ),
+    sa.PrimaryKeyConstraint('kodeUnit')
+    )
+    op.create_table('Ujian',
+    sa.Column('idUjian', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('waktu', sa.DateTime(), nullable=False),
+    sa.Column('tempat', sa.String(length=32), nullable=True),
+    sa.Column('ruang', sa.String(length=32), nullable=True),
+    sa.Column('status', sa.String(length=15), nullable=True),
+    sa.Column('asesor', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['asesor'], ['Asesor.idAsesor'], ),
+    sa.PrimaryKeyConstraint('idUjian')
+    )
+    op.create_table('ElemenKompetensi',
+    sa.Column('idElemen', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('Nama', sa.String(length=128), nullable=False),
+    sa.Column('ujikompetensi', sa.String(length=128), nullable=True),
+    sa.ForeignKeyConstraint(['ujikompetensi'], ['UjiKompetensi.kodeUnit'], ),
+    sa.PrimaryKeyConstraint('idElemen')
+    )
+    op.create_table('Pendaftaran',
+    sa.Column('noPendaftaran', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('Tanggal', sa.Date(), nullable=False),
+    sa.Column('Status', sa.Boolean(), nullable=False),
+    sa.Column('asesi', sa.Integer(), nullable=False),
+    sa.Column('admin', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['admin'], ['Admin.kode'], ),
+    sa.ForeignKeyConstraint(['asesi'], ['Asesi.idAsesi'], ),
+    sa.PrimaryKeyConstraint('noPendaftaran')
     )
     op.create_table('KUK',
     sa.Column('idKUK', sa.Integer(), autoincrement=True, nullable=False),
@@ -100,16 +103,6 @@ def upgrade():
     sa.Column('elemen', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['elemen'], ['ElemenKompetensi.idElemen'], ),
     sa.PrimaryKeyConstraint('idKUK')
-    )
-    op.create_table('Pendaftaran',
-    sa.Column('noPendaftaran', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('tanggal', sa.Date(), nullable=False),
-    sa.Column('status', sa.Boolean(), nullable=False),
-    sa.Column('asesi', sa.Integer(), nullable=False),
-    sa.Column('admin', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['admin'], ['Admin.kode'], ),
-    sa.ForeignKeyConstraint(['asesi'], ['Asesi.idAsesi'], ),
-    sa.PrimaryKeyConstraint('noPendaftaran')
     )
     op.create_table('DetailUjian',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -122,20 +115,27 @@ def upgrade():
     sa.ForeignKeyConstraint(['ujian'], ['Ujian.idUjian'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.drop_table('Jurusan')
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.create_table('Jurusan',
+    sa.Column('idJurusan', mysql.INTEGER(display_width=11), autoincrement=True, nullable=False),
+    sa.Column('Nama', mysql.VARCHAR(length=64), nullable=False),
+    sa.PrimaryKeyConstraint('idJurusan'),
+    mysql_default_charset='latin1',
+    mysql_engine='InnoDB'
+    )
     op.drop_table('DetailUjian')
-    op.drop_table('Pendaftaran')
     op.drop_table('KUK')
-    op.drop_table('Asesi')
-    op.drop_table('Ujian')
-    op.drop_table('Jurusan')
+    op.drop_table('Pendaftaran')
     op.drop_table('ElemenKompetensi')
+    op.drop_table('Ujian')
     op.drop_table('UjiKompetensi')
-    op.drop_table('Pekerjaan')
+    op.drop_table('Asesi')
+    op.drop_table('Skema')
     op.drop_table('Asesor')
     op.drop_table('Admin')
     # ### end Alembic commands ###

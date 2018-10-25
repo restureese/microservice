@@ -2,37 +2,41 @@ from server import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class UjiKompetensi(db.Model):
-	__tablename__ = 'UjiKompetensi'
-	KodeUnit = db.Column(db.String(128),primary_key=True)
-	JudulUnit = db.Column(db.String(128),nullable=False)
 
-	def __init__(self, kode,judul):
-		self.KodeUnit = kode
-		self.JudulUnit = judul
-
-	def __repr__(self):
-		return self.KodeUnit
-
-class Jurusan(db.Model):
-	__tablename__ = 'Jurusan'
-	idJurusan = db.Column(db.Integer,primary_key=True)
-	Nama = db.Column(db.String(64),nullable=False)
-	kompetensi = db.Column(db.String(128),db.ForeignKey('UjiKompetensi.KodeUnit'))
+class Skema(db.Model):
+	__tablename__ = 'Skema'
+	idSkema = db.Column(db.Integer,primary_key=True)
+	Nama = db.Column(db.String(128),nullable=False)
 
 	def __init__(self,id,nama,kompetensi):
-		self.idJurusan = id
+		self.idSkema = id
 		self.Nama = nama
 		self.kompetensi = kompetensi
 
 	def __repr__(self):
-		return self.idJurusan
+		return self.idSkema
+
+
+class UjiKompetensi(db.Model):
+	__tablename__ = 'UjiKompetensi'
+	kodeUnit = db.Column(db.String(128),primary_key=True)
+	judulUnit = db.Column(db.String(128),nullable=False)
+	Skema = db.Column(db.Integer,db.ForeignKey('Skema.idSkema'))
+	def __init__(self, kode,judul,Skema):
+		self.kodeUnit = kode
+		self.judulUnit = judul
+		self.Skema = Skema
+
+	def __repr__(self):
+		return self.kodeUnit
+
+
 
 class ElemenKompetensi(db.Model):
 	__tablename__ = 'ElemenKompetensi'
 	idElemen = db.Column(db.Integer, primary_key=True,autoincrement=True)
 	Nama = db.Column(db.String(128), nullable=False)
-	ujikompetensi = db.Column(db.String(128),db.ForeignKey('UjiKompetensi.KodeUnit'))
+	ujikompetensi = db.Column(db.String(128),db.ForeignKey('UjiKompetensi.kodeUnit'))
 
 
 	def __init__(self,nama,ujikompetensi):
@@ -55,28 +59,6 @@ class KUK(db.Model):
 	def __repr__(self):
 		return self.idKUK
 
-
-
-class Pekerjaan(db.Model):
-	__tablename__ = 'Pekerjaan'
-	idPekerjaan = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	NamaPerusahaan = db.Column(db.String(128), nullable=False)
-	Jabatan = db.Column(db.String(128))
-	Alamat = db.Column(db.String(255))
-	KodePos = db.Column(db.String(8))
-	NoTelepon = db.Column(db.String(13))
-	NoFax = db.Column(db.String(32))
-	Email = db.Column(db.String(64))
-
-	def __init__(self,nama, jabatan, alamat, pos,telepon, fax, email):
-		self.NamaPerusahaan = nama
-		self.Jabatan = jabatan
-		self.Alamat = alamat
-		self.KodePos = pos
-		self.NoTelepon = telepon
-		self.NoFax = fax
-		self.Email = email
-
 class Asesi(db.Model):
 	__tablename__ = 'Asesi'
 	idAsesi = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -91,12 +73,17 @@ class Asesi(db.Model):
 	NoHPKantor = db.Column(db.String(13))
 	Email = db.Column(db.String(64))
 	PendidikanTerakhir = db.Column(db.String(128))
-	StatusKompeten = db.Column(db.Boolean())
 	StatusBekerja = db.Column(db.Boolean())
-	idPekerjaan = db.Column(db.Integer,db.ForeignKey('Pekerjaan.idPekerjaan'))
-	jurusan = db.Column(db.Integer,db.ForeignKey('Jurusan.idJurusan'))
+	NamaPerusahaan = db.Column(db.String(128), nullable=False)
+	Jabatan = db.Column(db.String(128))
+	AlamatPerusahaan = db.Column(db.String(255))
+	KodePosPerusahaan = db.Column(db.String(8))
+	NoTeleponPerusahaan = db.Column(db.String(13))
+	NoFaxPerusahaan = db.Column(db.String(32))
+	EmailPerusahaan = db.Column(db.String(64))
+	Skema = db.Column(db.Integer,db.ForeignKey('Skema.idSkema'))
 
-	def __init__(self, nama, tempat, kelamin, bangsa, alamat, pos, nohp, rumah, kantor,email,pendidikan,statuskerja,pekerjaan,jurusan):
+	def __init__(self, nama, tempat, kelamin, bangsa, alamat, pos, nohp, rumah, kantor,email,pendidikan,statuskerja,pekerjaan,Skema):
 		self.NamaLengkap = nama
 		self.TempatLahir = tempat
 		self.JenisKelamin = kelamin
@@ -111,13 +98,22 @@ class Asesi(db.Model):
 		self.StatusKompeten = False
 		self.StatusBekerja = statuskerja
 		self.bekerja = pekerjaan
-		self.jurusan = jurusan
+		self.Skema = Skema
 
 	def __repr__(self):
 		return self.NamaLengkap
 
 	def cekKompeten(self):
 		return self.StatusKompeten
+
+	def setDataPerusahaan(self,nama, jabatan, alamat, pos,telepon, fax, email):
+		self.NamaPerusahaan = nama
+		self.Jabatan = jabatan
+		self.AlamatPerusahaan = alamat
+		self.KodePosPerusahaan = pos
+		self.NoTeleponPerusahaan = telepon
+		self.NoFaxPerusahaan = fax
+		self.EmailPerusahaan = email
 
 class Admin(db.Model):
 	__tablename__ = 'Admin'
@@ -144,14 +140,14 @@ class Admin(db.Model):
 class Pendaftaran(db.Model):
 	__tablename__ = 'Pendaftaran'
 	noPendaftaran = db.Column(db.Integer,primary_key=True,autoincrement=True)
-	tanggal = db.Column(db.Date(),nullable=False)
-	status = db.Column(db.Boolean(),nullable=False)
+	Tanggal = db.Column(db.Date(),nullable=False)
+	Status = db.Column(db.Boolean(),nullable=False)
 	asesi = db.Column(db.Integer,db.ForeignKey('Asesi.idAsesi'),nullable=False)
 	admin = db.Column(db.Integer,db.ForeignKey('Admin.kode'),nullable=False)
 
 	def __init__(self,asesi):
 		self.tanggal = db.func.now()
-		self.status = False
+		self.Status = False
 		self.asesi = asesi
 
 	def setStatus(self,status):
@@ -186,11 +182,17 @@ class Ujian(db.Model):
 		self.asesor = asesor
 
 
-
 class DetailUjian(db.Model):
 	__tablename__ = 'DetailUjian'
 	id = db.Column(db.Integer,primary_key=True,autoincrement=True)
-	nilai = db.Column(db.Integer,nullable=False)
 	ujian = db.Column(db.Integer,db.ForeignKey('Ujian.idUjian'))
 	asesi = db.Column(db.Integer,db.ForeignKey('Pendaftaran.noPendaftaran'))
+
+class NilaiUjian(db.Model):
+	__tablename__ = 'NilaiUjian'
+	id = db.Column(db.Integer,primary_key=True,autoincrement=True)
+	asesi = db.Column(db.Integer,db.ForeignKey('DetailUjian.asesi'))
 	kuk = db.Column(db.Integer,db.ForeignKey('KUK.idKUK'))
+	nilai = db.Column(db.Integer,nullable=False)
+	bukti = db.Column(db.String(128))
+	status = db.Column(db.String(128))

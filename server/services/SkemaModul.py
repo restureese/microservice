@@ -1,6 +1,6 @@
 from flask import jsonify,request
 from flask_restful import Resource
-from server.models import KUK,ElemenKompetensi,UjiKompetensi,Jurusan
+from server.models import KUK,ElemenKompetensi,UjiKompetensi,Skema
 from server import db,api
 
 
@@ -40,8 +40,8 @@ class KUKServiceList(Resource):
 	"""class untuk melayani data yang banyak"""
 	
 	#mengembalikan semua service list
-	def get(self):
-		return jsonify(list_kuk = [dict(idKUK=kuk.idKUK,pertanyaan=kuk.Pertanyaan,elemen=kuk.elemen) for kuk in KUK.query.all()],response=200)
+	def get(self,idElemen):
+		return jsonify(list_kuk = [dict(idKUK=kuk.idKUK,pertanyaan=kuk.Pertanyaan) for kuk in KUK.query.filter_by(elemen=idElemen).all()],response=200)
 
 	#menambah kuk
 	def post(self):
@@ -85,8 +85,8 @@ class ElemenKompetensiService(Resource):
 			return jsonify(response=204)
 
 class ElemenKompetensiServiceList(Resource):
-	def get(self):
-		return jsonify(list_elemen=[dict(idElemen=elemen.idElemen,nama=elemen.Nama,ujikompetensi=elemen.ujikompetensi) for elemen in ElemenKompetensi.query.all()],
+	def get(self,kodeUnit):
+		return jsonify(list_elemen=[dict(idElemen=elemen.idElemen,nama=elemen.Nama) for elemen in ElemenKompetensi.query.filter_by(ujikompetensi=kodeUnit).all()],
 			response=200)
 
 	def post(self):
@@ -100,9 +100,9 @@ class ElemenKompetensiServiceList(Resource):
 
 class UjiKompetensiService(Resource):
 	def get(self,kodeUnit):
-		unit = UjiKompetensi.query.filter_by(KodeUnit=kodeUnit).first()
+		unit = UjiKompetensi.query.filter_by(kodeUnit=kodeUnit).first()
 		if unit is not None:
-			return jsonify(unit={'KodeUnit':unit.KodeUnit,'judul':unit.JudulUnit},response=200)
+			return jsonify(unit={'KodeUnit':unit.kodeUnit,'judul':unit.judulUnit},response=200)
 		else:
 			return jsonify(response=204)
 
@@ -125,8 +125,8 @@ class UjiKompetensiService(Resource):
 			return jsonify(response=204)
 
 class UjiKompetensiServiceList(Resource):
-	def get(self):
-		return jsonify(list_ujikompetensi=[dict(KodeUnit=unit.KodeUnit,JudulUnit=unit.JudulUnit) for unit in UjiKompetensi.query.all()],
+	def get(self,kodeSkema):
+		return jsonify(list_ujikompetensi=[dict(KodeUnit=unit.kodeUnit,JudulUnit=unit.judulUnit) for unit in UjiKompetensi.query.filter_by(Skema=kodeSkema).all()],
 			response=200)
 
 	def post(self):
@@ -140,41 +140,41 @@ class UjiKompetensiServiceList(Resource):
 		except Exception as e:
 			return jsonify(response=304,error=e)
 
-class JurusanService(Resource):
-	def get(self,kodeJurusan):
-		jurusan = Jurusan.query.filter_by(idJurusan=kodeJurusan).first()
-		if jurusan is not None:
-			return jsonify(jurusan={'idJurusan':jurusan.idJurusan,'Nama':jurusan.Nama,'kompetensi':jurusan.kompetensi},response=200)
+class SkemaService(Resource):
+	def get(self,kodeSkema):
+		skema = Skema.query.filter_by(idSkema=kodeSkema).first()
+		if skema is not None:
+			return jsonify(Skema={'idSkema':skema.idSkema,'Nama':skema.Nama},response=200)
 		else:
 			return jsonify(response=204)
 	
-	def put(self,kodeJurusan):
-		jurusan = Jurusan.query.filter_by(idJurusan=kodeJurusan).first()
-		if jurusan is not None:
-			jurusan.Nama = request.form['nama']
-			jurusan.kompetensi = request.form['kompetensi']
+	def put(self,kodeSkema):
+		Skema = Skema.query.filter_by(idSkema=kodeSkema).first()
+		if Skema is not None:
+			Skema.Nama = request.form['nama']
+			Skema.kompetensi = request.form['kompetensi']
 			db.session.commit()
 			return jsonify(response=201)
 		else:
 			return jsonify(response=204)
 
-	def delete(self,kodeJurusan):
-		jurusan = Jurusan.query.filter_by(idJurusan=kodeJurusan).first()
-		if jurusan is not None:
-			db.session.delete(jurusan)
+	def delete(self,kodeSkema):
+		Skema = Skema.query.filter_by(idSkema=kodeSkema).first()
+		if Skema is not None:
+			db.session.delete(Skema)
 			db.session.commit()
 			return jsonify(response=202)
 		else:
 			return jsonify(response=204)
 
-class JurusanServiceList(Resource):
+class SkemaServiceList(Resource):
 	def get(self):
-		return jsonify(list_jurusan=[dict(idJurusan=jurusan.idJurusan,nama=jurusan.Nama,kompetensi=jurusan.kompetensi) for jurusan in Jurusan.query.all()],response=200)
+		return jsonify(list_Skema=[dict(idSkema=Skema.idSkema,nama=Skema.Nama) for Skema in Skema.query.all()],response=200)
 
 	def post(self):
 		try:
-			jurusan = Jurusan(id=request.form['idJurusan'],nama=request.form['nama'],kompetensi=request.form['kompetensi'])
-			db.session.add(jurusan)
+			Skema = Skema(id=request.form['idSkema'],nama=request.form['nama'],kompetensi=request.form['kompetensi'])
+			db.session.add(Skema)
 			db.session.commit()
 			return jsonify(response=201)
 		except Exception as e:

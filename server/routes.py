@@ -1,22 +1,22 @@
 from flask import request,jsonify
 from flask_restful import Resource
-from server.services.JurusanModul import KUKService,KUKServiceList,ElemenKompetensiService,ElemenKompetensiServiceList
-from server.services.JurusanModul import UjiKompetensiService,UjiKompetensiServiceList,JurusanService,JurusanService,JurusanServiceList
+from server.services.SkemaModul import KUKService,KUKServiceList,ElemenKompetensiService,ElemenKompetensiServiceList
+from server.services.SkemaModul import UjiKompetensiService,UjiKompetensiServiceList,SkemaService,SkemaService,SkemaServiceList
 from server import api,db
 
 
-#jurusan
-api.add_resource(JurusanService,'/jurusan/<kodeJurusan>')
-api.add_resource(JurusanServiceList,'/jurusan/')
+#Skema
+api.add_resource(SkemaService,'/Skema/<string:kodeSkema>')
+api.add_resource(SkemaServiceList,'/Skema/')
 
 #uji kompetensi
-api.add_resource(UjiKompetensiService,'/jurusan/kompetensi/<kodeUnit>')
-api.add_resource(UjiKompetensiServiceList,'/jurusan/kompetensi/')
+api.add_resource(UjiKompetensiService,'/Skema/kompetensi/all/<kodeUnit>')
+api.add_resource(UjiKompetensiServiceList,'/Skema/kompetensi/<kodeSkema>')
 
 #elemen
-api.add_resource(ElemenKompetensiService,'/jurusan/kompetensi/elemen/<idElemen>')
-api.add_resource(ElemenKompetensiServiceList,'/jurusan/kompetensi/elemen/')
+api.add_resource(ElemenKompetensiService,'/Skema/kompetensi/elemen/all/<idElemen>')
+api.add_resource(ElemenKompetensiServiceList,'/Skema/kompetensi/elemen/<kodeUnit>')
 
 #kuk
-api.add_resource(KUKService,'/jurusan/kompetensi/elemen/kuk/<id_kuk>')
-api.add_resource(KUKServiceList,'/jurusan/kompetensi/elemen/kuk/')
+api.add_resource(KUKService,'/Skema/kompetensi/elemen/kuk/all/<id_kuk>')
+api.add_resource(KUKServiceList,'/Skema/kompetensi/elemen/kuk/<idElemen>')
